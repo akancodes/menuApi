@@ -3,12 +3,15 @@ import helmet from "helmet";
 import cors from "cors";
 import "dotenv/config";
 import connectToDatabase from "./helpers/database";
+import routers from "./routes";
 
 const app = express();
 
 app.use(express.json());
 app.use(helmet());
 app.use(cors());
+
+app.use("/api/v1/menu", routers.menu);
 
 if (!process.env.DB_USER || !process.env.DB_PASS || !process.env.DB_NAME) {
   throw new Error("Missing DB_USER, DB_PASSWORD or DB_NAME in .env file");
