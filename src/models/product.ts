@@ -1,10 +1,10 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
 interface IProduct {
   title: string;
   description: string;
   price: number;
-  menu: string;
+  menu: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
