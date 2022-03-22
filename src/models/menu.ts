@@ -1,9 +1,9 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
 interface IMenu {
   title: string;
   image: string;
-  products: object[];
+  products: Types.Array<Types.ObjectId>;
   createdAt: Date;
   updatedAt: Date;
 }
