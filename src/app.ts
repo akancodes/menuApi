@@ -13,6 +13,7 @@ app.use(cors());
 
 app.use("/api/v1/menu", routers.menu);
 app.use("/api/v1/product", routers.product);
+app.use("/api/v1/user", routers.user);
 
 if (!process.env.DB_USER || !process.env.DB_PASS || !process.env.DB_NAME) {
   throw new Error("Missing DB_USER, DB_PASSWORD or DB_NAME in .env file");
