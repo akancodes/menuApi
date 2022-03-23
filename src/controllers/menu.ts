@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 
 import Menu from "../models/menu";
+import Product from "../models/product";
 
 const getMenu = async (req: Request, res: Response, next: NextFunction) => {
   const menu = await Menu.find();
@@ -80,6 +81,11 @@ const deleteMenu = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // TODO: User validation
+
+    // Delete the products linked to the menu
+    menu.products.map(async (product) => {
+      await Product.deleteMany({ _id: product });
+    });
 
     // Delete menu
     await menu.remove();
