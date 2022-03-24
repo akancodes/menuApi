@@ -3,6 +3,7 @@ import { Schema, model, Types } from "mongoose";
 interface IMenu {
   title: string;
   image: string;
+  creator: Types.ObjectId;
   products: Types.Array<Types.ObjectId>;
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +19,10 @@ const schema = new Schema<IMenu>(
       type: String,
       required: true,
     },
-    // TODO: add creator
+    creator: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     products: [
       {
         type: Schema.Types.ObjectId,
