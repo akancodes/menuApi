@@ -2,6 +2,9 @@ import express, { Request, Response, NextFunction } from "express";
 
 import Menu from "../models/menu";
 import Product from "../models/product";
+import User from "../models/user";
+
+import checkUser from "../helpers/user";
 
 const getMenu = async (req: Request, res: Response, next: NextFunction) => {
   const menu = await Menu.find();
@@ -48,27 +51,57 @@ const getMenuById = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const createMenu = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, image } = req.body;
+  const { title, image, creator } = req.body;
+  const token = req.header("Authorization")?.split(" ")[1];
 
-  if (!title || !image) {
+  if (!token) {
+    throw new Error("Token not found!");
+  }
+
+  if (!title || !image || !creator) {
     return res.status(400).json({
       message: "Please provide all required fields",
     });
   }
 
-  const menu = new Menu({
-    title,
-    image,
-  });
-  await menu.save();
-  res.status(201).json({
-    message: "Menu created successfully!",
-    menu,
-  });
+  // Check creator is equal the logged user.
+  try {
+    const user = await User.findOne({ _id: creator });
+
+    if (!user) {
+      throw new Error("Please enter valid creator");
+    }
+
+    const isAuth = checkUser(token, user.username);
+
+    if (!isAuth) {
+      throw new Error("Authorization failed!");
+    }
+
+    const menu = new Menu({
+      title,
+      image,
+      creator,
+    });
+    await menu.save();
+    res.status(201).json({
+      message: "Menu created successfully!",
+      menu,
+    });
+  } catch (e: any) {
+    res.status(500).json({
+      message: e.message,
+    });
+  }
 };
 
 const deleteMenu = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header("Authorization")?.split(" ")[1];
   const { id } = req.params;
+
+  if (!token) {
+    throw new Error("Token not found!");
+  }
 
   try {
     const menu = await Menu.findById(id);
@@ -80,7 +113,15 @@ const deleteMenu = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    // TODO: User validation
+    // User validation
+    const user = await User.findById(menu.creator);
+    if (!user) {
+      throw new Error("Creator not found!");
+    }
+    const isAuth = checkUser(token, user.username);
+    if (!isAuth) {
+      throw new Error("Authorization failed!");
+    }
 
     // Delete the products linked to the menu
     menu.products.map(async (product) => {
@@ -94,7 +135,7 @@ const deleteMenu = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (error: any) {
     res.status(404).json({
-      message: "Failed to delete menu",
+      message: error.message,
     });
   }
 };
@@ -102,6 +143,11 @@ const deleteMenu = async (req: Request, res: Response, next: NextFunction) => {
 const updateMenu = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   const { title, image } = req.body;
+  const token = req.header("Authorization")?.split(" ")[1];
+
+  if (!token) {
+    throw new Error("Token is not found!");
+  }
 
   try {
     const menu = await Menu.findById(id);
@@ -113,7 +159,15 @@ const updateMenu = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    // TODO: User validation
+    // User validation
+    const user = await User.findById(menu.creator);
+    if (!user) {
+      throw new Error("User not found!");
+    }
+    const isAuth = checkUser(token, user.username);
+    if (!isAuth) {
+      throw new Error("Authorization failed!");
+    }
 
     // Check fields are given
     if (!title || !image) {
@@ -132,7 +186,7 @@ const updateMenu = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (error: any) {
     res.status(500).json({
-      message: "An error occured!",
+      message: error.message,
     });
   }
 };
