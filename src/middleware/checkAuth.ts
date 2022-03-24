@@ -22,7 +22,6 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!decodedToken) {
     throw new Error("Authentication failed!");
   }
-  console.log("Authenticated!", decodedToken);
   next();
 };
 
