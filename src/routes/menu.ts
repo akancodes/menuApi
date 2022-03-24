@@ -1,5 +1,6 @@
 import express from "express";
 import controllers from "../controllers";
+import middlewares from "../middleware";
 
 const router = express.Router();
 
@@ -10,12 +11,12 @@ router.get("/", controllers.menu.getMenu);
 router.get("/:id", controllers.menu.getMenuById);
 
 // * POST /api/menu
-router.post("/", controllers.menu.createMenu);
+router.post("/", middlewares.checkAuth, controllers.menu.createMenu);
 
 // * PUT /api/menu/:id
-router.put("/:id", controllers.menu.updateMenu);
+router.put("/:id", middlewares.checkAuth, controllers.menu.updateMenu);
 
 // * DELETE /api/menu/:id
-router.delete("/:id", controllers.menu.deleteMenu);
+router.delete("/:id", middlewares.checkAuth, controllers.menu.deleteMenu);
 
 export default router;
