@@ -133,6 +133,10 @@ const deleteMenu = async (req: Request, res: Response, next: NextFunction) => {
       await Product.deleteMany({ _id: product });
     });
 
+    // Delete menu of into the user model
+    user.menus.pull(id);
+    await user.save();
+
     // Delete menu
     await menu.remove();
     res.status(200).json({
