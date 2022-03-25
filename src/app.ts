@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import "dotenv/config";
@@ -24,6 +24,13 @@ connectToDatabase(
   process.env.DB_PASS,
   process.env.DB_NAME
 );
+
+// Error handling
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  res.status(err.code || 500).json({
+    message: err.message,
+  });
+});
 
 app.listen(process.env.PORT || 8080, () => {
   console.log("Server is running");
