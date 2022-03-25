@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import Product from "../models/product";
 import Menu from "../models/menu";
+import checkUser from "../helpers/user";
+import User from "../models/user";
 
 const getProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -54,9 +56,9 @@ const createProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { title, description, price, menuId } = req.body;
-
   try {
+    const { title, description, price, menuId } = req.body;
+    const token = req.header("Authorization")?.split(" ")[1];
     const menu = await Menu.findById(menuId);
 
     if (!menu) {
@@ -65,15 +67,34 @@ const createProduct = async (
       });
     }
 
+    const user = await User.findOne({ _id: menu.creator });
+
+    if (!token) {
+      throw new Error("Token not found!");
+    }
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const isAuth = checkUser(token, user.username);
+
+    if (!isAuth) {
+      throw new Error("Authorization failed!");
+    }
+
     const product = new Product({
       title,
       description,
       price,
       menu: menuId,
+      creator: user._id,
     });
     await product.save();
     menu.products.push(product._id);
     await menu.save();
+    user.products.push(product._id);
+    await user.save();
 
     res.status(201).json({
       message: "Product created successfully!",
