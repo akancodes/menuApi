@@ -174,8 +174,9 @@ const deleteProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+    const token = req.header("Authorization")?.split(" ")[1];
     const product = await Product.findById(id);
     // Check if product not exists
     if (!product) {
@@ -190,14 +191,31 @@ const deleteProduct = async (
         message: "Menu not found!",
       });
     }
+    const user = await User.findOne({ _id: menu.creator });
 
-    // TODO: User authentication
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    if (!token) {
+      throw new Error("Token not found!");
+    }
+
+    // * User authentication
+    const isAuth = checkUser(token, user.username);
+
+    if (!isAuth) {
+      throw new Error("Authorization failed!");
+    }
 
     // * Remove product from menu
     menu.products.pull(product._id);
     await menu.save();
     // * Remove product
     await product.remove();
+    // * Remove product of into user model
+    user.products.pull(product._id);
+    await user.save();
 
     res.status(200).json({
       message: "Product deleted successfully!",
