@@ -84,6 +84,11 @@ const createMenu = async (req: Request, res: Response, next: NextFunction) => {
       creator,
     });
     await menu.save();
+
+    // Link menu to user
+    user.menus.push(menu._id);
+    await user.save();
+
     res.status(201).json({
       message: "Menu created successfully!",
       menu,
