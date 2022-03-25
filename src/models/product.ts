@@ -4,6 +4,7 @@ interface IProduct {
   title: string;
   description: string;
   price: number;
+  creator: Types.ObjectId;
   menu: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -22,7 +23,10 @@ const schema = new Schema(
       type: Number,
       required: true,
     },
-    // TODO: add creator
+    creator: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     menu: {
       type: Schema.Types.ObjectId,
       ref: "Menu",
